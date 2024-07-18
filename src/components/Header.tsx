@@ -1,26 +1,22 @@
+import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+import DarkModeToggle from './DarkModeToggle'
 
-const Header = () => {
+const Header: React.FC = () => {
   return (
-    <header className="bg-gray-100 py-4">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex justify-between">
-          <div className="flex items-center">
-            <Link href="/">
-              My Blog
-            </Link>
-          </div>
-          <div className="flex items-center">
-            <Link href="/">
-              Home
-            </Link>
-            <Link href="/about">
-              About
-            </Link>
-          </div>
-        </nav>
+    <nav className="bg-gray-800 text-white py-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link href="/" className="text-xl font-bold"><Image src="/SDM_logo.png" alt="Vercel Logo" width={50} height={50} className="rounded" /></Link>
+        <ul className="flex space-x-4">
+          <li><Link href="/" className="hover:text-gray-300 transition-colors">Home</Link></li>
+          <li><Link href="/articles" className="hover:text-gray-300 transition-colors">Articles</Link></li>
+          <li><Link href="/projects" className="hover:text-gray-300 transition-colors">Projects</Link></li>
+          <li><Link href="/about" className="hover:text-gray-300 transition-colors">About</Link></li>
+          <li><DarkModeToggle /></li>
+        </ul>
       </div>
-    </header>
+    </nav>
   )
 }
 

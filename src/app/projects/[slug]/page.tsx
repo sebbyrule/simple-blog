@@ -5,14 +5,14 @@ import matter from 'gray-matter'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import MDXComponents from '@/components/mdx'
 
-interface ArticlePageProps {
+interface ProjectPageProps {
   params: {
     slug: string
   }
 }
 
 export async function generateStaticParams() {
-  const files = fs.readdirSync(path.join(process.cwd(), 'src/content/articles'))
+  const files = fs.readdirSync(path.join(process.cwd(), 'src/content/projects'))
   
   const paths = files.map((filename) => ({
     slug: filename.replace('.mdx', ''),
@@ -21,9 +21,9 @@ export async function generateStaticParams() {
   return paths
 }
 
-async function getArticleContent(slug: string) {
+async function getProjectContent(slug: string) {
   const markdownWithMeta = fs.readFileSync(
-    path.join('src/content/articles', `${slug}.mdx`),
+    path.join('src/content/projects', `${slug}.mdx`),
     'utf-8'
   )
 
@@ -36,8 +36,8 @@ async function getArticleContent(slug: string) {
   }
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
-  const { frontMatter, content } = await getArticleContent(params.slug)
+export default async function ProjectePage({ params }: ProjectPageProps) {
+  const { frontMatter, content } = await getProjectContent(params.slug)
 
   return (
     <article className="py-12">
