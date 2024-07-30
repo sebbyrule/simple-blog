@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import Link from 'next/link'
+import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import Hero from '@/components/Hero'
 
@@ -101,7 +102,7 @@ export default async function Home() {
         <Carousel
           items={recentProjects.map((project) => (
             <div key={project.slug} className="border rounded-lg overflow-hidden">
-              <img src={project.image} alt={project.title} className="w-full h-48 object-cover" />
+              <Image src={project.image} alt={project.title} width={500} height={300} />
               <div className="p-4">
                 <h3 className="text-xl font-semibold mb-2">
                   <Link href={`/projects/${project.slug}`}>

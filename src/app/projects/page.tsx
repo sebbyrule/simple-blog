@@ -4,6 +4,7 @@ import path from 'path'
 import matter from 'gray-matter'
 import Link from 'next/link'
 import Search from '@/components/Search'
+import Image from 'next/image'
 
 interface Project {
   slug: string
@@ -74,7 +75,7 @@ export default async function ProjectsPage({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {projects.map((project) => (
           <article key={project.slug} className="border rounded-lg overflow-hidden">
-            <img src={project.image} alt={project.title} className="w-full h-48 object-cover" />
+            <Image src={project.image} alt={project.title} width={500} height={300} />
               <h2 className="text-xl font-semibold mb-2">
                 <Link href={`/projects/${project.slug}`} className="hover:underline">
                   {project.title}
