@@ -11,6 +11,7 @@ interface ArticlePageProps {
   }
 }
 
+// This function is used for static generation at build time
 export async function generateStaticParams() {
   const files = fs.readdirSync(path.join(process.cwd(), 'src/content/articles'))
   
@@ -36,6 +37,7 @@ async function getArticleContent(slug: string) {
   }
 }
 
+// This function is used for server-side rendering
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { frontMatter, content } = await getArticleContent(params.slug)
 

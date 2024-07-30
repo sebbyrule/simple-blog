@@ -1,5 +1,6 @@
 import React from 'react'
 
+
 export const Callout: React.FC<{ children: React.ReactNode; type?: 'info' | 'warning' | 'error' }> = ({ children, type = 'info' }) => {
   const colors = {
     info: 'bg-blue-100 border-blue-500 text-blue-700',

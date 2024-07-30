@@ -2,12 +2,17 @@ import React from 'react'
 
 const Hero: React.FC = () => {
   return (
-    <div className="bg-gray-100 py-20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to My Blog</h1>
-        <p className="text-xl text-gray-600">Exploring software engineering, web development, and more.</p>
+    <div className="py-20 container mx-auto text-center flex flex-col md:flex-row items-center">
+      <div className="md:w-2/3">
+        <h1 className="text-5xl font-bold mb-4">Welcome to SebDoesMedia</h1>
+        <p className="text-xl">Master Programming, Maximize Productivity, and Discover Insightful Teachings</p>
+        <p>Welcome to SebDoesMedia, your go-to resource for transformative programming projects, insightful articles on effective learning and time management, and comprehensive book reviews. Whether you're a seasoned coder or just starting your journey, SebDoesMedia is here to inspire and guide you every step of the way.</p>
+      </div>
+      <div className="md:w-1/3">
+        <img src="/SebDoesMedia.png" alt="SebDoesMedia" className="rounded-full w-48 h-48 md:w-64 md:h-64" />
       </div>
     </div>
+
   )
 }
 
