@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 
 const Hero: React.FC = () => {
   return (
@@ -9,7 +10,7 @@ const Hero: React.FC = () => {
         <p>Welcome to SebDoesMedia, your go-to resource for transformative programming projects, insightful articles on effective learning and time management, and comprehensive book reviews. Whether you're a seasoned coder or just starting your journey, SebDoesMedia is here to inspire and guide you every step of the way.</p>
       </div>
       <div className="md:w-1/3">
-        <img src="/SebDoesMedia.png" alt="SebDoesMedia" className="rounded-full w-48 h-48 md:w-64 md:h-64" />
+        {<Image src="/SebDoesMedia.png" alt="SebDoesMedia" width={200} height={200} />}
       </div>
     </div>
 
