@@ -16,7 +16,7 @@ interface Article {
   excerpt: string
 }
 
-interface Project {
+interface HowTo {
   slug: string
   title: string
   description: string
@@ -47,13 +47,13 @@ async function getRecentArticles(count: number): Promise<Article[]> {
     .slice(0, count)
 }
 
-async function getRecentProjects(count: number): Promise<Project[]> {
-  const files = fs.readdirSync(path.join(process.cwd(), 'src/content/projects'))
+async function getRecentHowTos(count: number): Promise<HowTo[]> {
+  const files = fs.readdirSync(path.join(process.cwd(), 'src/content/howto'))
   
   const projects = files.map((filename) => {
     const slug = filename.replace('.mdx', '')
     const markdownWithMeta = fs.readFileSync(
-      path.join('src/content/projects', filename),
+      path.join('src/content/howto', filename),
       'utf-8'
     )
     const { data } = matter(markdownWithMeta)
@@ -71,7 +71,7 @@ async function getRecentProjects(count: number): Promise<Project[]> {
 
 export default async function Home() {
   const recentArticles = await getRecentArticles(3)
-  const recentProjects = await getRecentProjects(3)
+  const recentHowTos = await getRecentHowTos(3)
 
   return (
     <div>
@@ -98,25 +98,25 @@ export default async function Home() {
         </div>
       </div>
       <div className="py-12">
-        <h2 className="text-2xl font-bold mb-4">Featured Projects</h2>
+        <h2 className="text-2xl font-bold mb-4">Featured How-To</h2>
         <Carousel
-          items={recentProjects.map((project) => (
-            <div key={project.slug} className="border rounded-lg overflow-hidden">
-              <Image src={project.image} alt={project.title} width={500} height={300} />
+          items={recentHowTos.map((howto) => (
+            <div key={howto.slug} className="border rounded-lg overflow-hidden">
+              <Image src={howto.image} alt={howto.title} width={500} height={300} />
               <div className="p-4">
                 <h3 className="text-xl font-semibold mb-2">
-                  <Link href={`/projects/${project.slug}`}>
-                    {project.title}
+                  <Link href={`/howto/${howto.slug}`}>
+                    {howto.title}
                   </Link>
                 </h3>
-                <p className="text-gray-600">{project.description}</p>
+                <p className="text-gray-600">{howto.description}</p>
               </div>
             </div>
           ))}
         />
         <div className="mt-4 text-right">
-          <Link href="/projects" className="text-blue-500 hover:underline">
-            View all projects
+          <Link href="/howto" className="text-blue-500 hover:underline">
+            View all how-to
           </Link>
         </div>
       </div>
