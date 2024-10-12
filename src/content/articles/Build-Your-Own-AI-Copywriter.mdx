@@ -1,0 +1,245 @@
+---
+title: Build Your Own AI Copywriter
+date: 2024-10-06
+excerpt: Build a Google Powered Copywriter with Langchain
+tags:
+  - python
+  - langchain
+  - Gemini
+---
+Since I started using tools like chatGPT and Anthropic's Claude I have been outright blown away with the speed that I can get things done now. One skill I have been trying to cultivate is my programming, and why not boost your coding skills with the hot new product blowing up the internet. As much as I have enjoyed chatGPT and Claude, their API costs $ that I do not have, and forget about running a decent model on my potato computer (your situation may vary). That is why for today I have chosen to use Google's Gemini. Gemini's API has a  generous free tier and I am pumped to see what results it will give us.
+
+## Getting Started
+
+First thing we'll need is our API key, we can head over to their API [docs](https://ai.google.dev/gemini-api/docs?_gl=1*1x4i70v*_ga*OTQ1MjI5NjkyLjE3MjM3ODg1ODM.*_ga_P1DBVKWT6V*MTcyODIyMTIyNi4xMS4xLjE3MjgyMjEyNDAuNDYuMC43NzMzNDI2MzA.), sign up if you haven't already, and get an api key.
+
+`python -m venv .venv`
+`.\.venv\Scripts\activate`
+`pip install python-dotenv langchain`
+`pip install -U langchain-google-genai`
+
+create a .env file and add:
+`API_KEY=YourAPIKey`
+
+Create a main.py file and we can test it out. Without using Langchain yet we'll make sure that we can make an API call to gemini. The prompt will be basic, don't worry we'll improve it, we'll also be able to see the difference proper prompting makes.
+
+```python
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
+load_dotenv()
+
+genai.configure(api_key=os.getenv('API_KEY'))
+
+model = genai.GenerativeModel(
+    model_name='gemini-1.5-flash',
+    system_instruction="You are a helpful assistant.",
+)
+
+prompt = "Write a blog post about {topic}."
+
+def generate_text(topic):
+    return model.generate_content(prompt.format(topic=topic))
+
+if __name__ == '__main__':
+    response = generate_text('artificial intelligence')
+    print(response.text)
+```
+
+running this returned 
+
+```
+##  The Future is Now: Exploring the World of Artificial Intelligence
+
+Artificial intelligence (AI) is no longer a futuristic concept from science fiction. It's rapidly weaving itself into the fabric of our lives, impacting everything from the way we shop and travel to the way we work and communicate.
+
+But what exactly is AI, and what does its future hold?
+
+**AI Defined:**
+
+Simply put, AI refers to the ability of computers to perform tasks that typically require human intelligence. This includes learning, problem-solving, decision-making, and even creativity.  AI systems are trained on vast amounts of data, allowing them to identify patterns, make predictions, and improve their performance over time.
+
+**Beyond the Hype:**
+
+While the media often paints a picture of AI as a singular, omnipotent force, the reality is much more nuanced. AI encompasses a wide range of technologies, each with its own unique capabilities. Some examples include:
+
+* **Machine learning:**  Algorithms that enable computers to learn from data without explicit programming.
+* **Deep learning:**  A specialized form of machine learning that uses artificial neural networks to analyze complex data, like images and speech.
+* **Natural language processing (NLP):** Allows computers to understand and interact with human language.
+* **Computer vision:** Enables computers to "see" and interpret images and videos.
+
+**AI in Action:**
+
+AI is already transforming countless industries:
+
+* **Healthcare:** AI-powered tools are aiding in disease diagnosis, drug discovery, and personalized treatment plans.
+* **Finance:** AI is used for fraud detection, risk assessment, and automated trading.
+* **Transportation:** Self-driving cars and traffic optimization systems are powered by AI.
+* **Education:** AI tutors and personalized learning platforms are enhancing educational experiences.
+* **Entertainment:** AI is used in music composition, movie production, and video game development.
+
+**The Ethical Landscape:**
+
+As AI becomes more powerful and pervasive, ethical concerns are also emerging. Questions about bias in algorithms, privacy, job displacement, and even the potential for misuse require careful consideration.
+
+**A Future of Collaboration:**
+
+AI is not here to replace humans. Instead, it has the potential to augment our abilities, making us more efficient, productive, and creative. By embracing responsible AI development and fostering collaboration between humans and machines, we can unlock a future where AI empowers us to achieve greater heights.
+
+**Get Involved:**
+
+The world of AI is constantly evolving. Stay informed by reading articles, watching documentaries, and exploring online resources. Consider taking an AI course to learn more about the technology and its potential applications. The future of AI is in our hands, and it's up to us to shape it wisely.
+```
+
+That was quick, and the text doesn't seem boring to read. But we can do better. Besides, we haven't even gotten to the fun code yet!
+## Adding Langchain
+Immediately there are some changes were going to make to our imports.
+```
+import os
+from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
+from pydantic import BaseModel
+load_dotenv()
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-flash",
+    google_api_key=os.getenv('API_KEY'),
+    # system_instruction="You are an expert copywriter.",
+)
+```
+
+With Langchain we get to define our prompt templates so that we can control the output structures, and so we can chain the results of one API call into another. Since we're having fun here I see no reason why we can't play around and test out some other styles of prompting. 
+
+**The Game Plan:**
+1. I would like to separate the writing process into two stages. The first call that we make to Gemini will create an outline of the article based on the topic we give it. The second call will then begin writing the article.
+2. The outline will be a defined structured output. We will use Pydantic for this, and it will ensure the LLM does not provide us with an unexpected format. 
+3. After parsing the output we give it to the article writer. For testing we will take that output and save it as a markdown file.
+
+**The Pydantic Model** is straight forward. The outline only has two types of information, the title of the article and the title of the headings. After that we have to define the parser that will force our output to match the model we created.
+```Python
+class Headings(BaseModel):
+    title: str
+class Outline(BaseModel):
+    title: str
+    headings: list[Headings]
+# defining output parser
+parser = PydanticOutputParser(pydantic_object=Outline)
+```
+
+**The Prompts**: Here we have a simple prompt that takes two variables, what we want to write about and then the format. You are free to add as many inputs as you'd like, get creative. Following the outline we will define the article generating prompt. The title and headings will be parsed later.
+```
+brainstorm_outline_prompt = PromptTemplate(
+    template="I want you to brainstorm about {topic}. Come up with a detailed outline of the topic.\nThe title should trigger positive SEO for the topic. The headings and sub-headings should reflect the title.\nreturn the outline in the following format: {format}",
+    input_variables=["topic"],
+    partial_variables={"format": parser.get_format_instructions()}
+)
+
+article_generation_prompt = PromptTemplate(
+    template="I want you to generate an elaborate article about {title}. Keep the tone authoritative and interesting. These are the headings for the article:\n{headings}\nReturn the article in the markdown format.",
+    input_variables=["title", "headings"]
+)
+```
+
+**Calling the Chains**: Langchain has a special syntax for running chains LCEL, the short version is that you use the | character so that the output of one function is the input to the next one. We take our brainstorm prompt, give it to the LLM, which then goes through our parser.
+```python
+brainstorm_chain = ( brainstorm_outline_prompt | llm | parser)
+article_chain = (article_generation_prompt | llm)
+```
+
+**Finally** calling the functions. Well, almost. Last two definitions and then we will get to running.
+```python
+# Get extract title and headings
+def formatter(Outline: Outline):
+    title = f"{Outline.title}"
+    Headings = ""
+    for heading in Outline.headings:
+        Headings += f"{heading.title}\n"
+    return title, Headings
+# Save to markdown
+def save_to_markdown(text: str):
+    with open("article.md", "w") as f:
+        f.write(text)
+
+if __name__ == '__main__':
+    brainstorm = brainstorm_chain.invoke({"topic": "artificial intelligence"})
+    title, headings = formatter(brainstorm)
+    article = article_chain.invoke({"title": title, "headings": headings})
+    save_to_markdown(article.content)
+```
+
+**The after** 
+```
+## The Future is Now: Exploring the Potential of Artificial Intelligence 
+
+### Introduction: AI - The Next Frontier
+The world is on the cusp of a technological revolution, driven by the rapid advancement of Artificial Intelligence (AI).  No longer confined to the realm of science fiction, AI is rapidly permeating every aspect of our lives, from the smartphones we use to the cars we drive.  This article explores the multifaceted nature of AI, its potential benefits and challenges, and the profound impact it will have on our future.
+
+### Understanding Artificial Intelligence
+At its core, AI refers to the simulation of human intelligence processes by machines. These processes include learning, problem-solving, decision-making, and even creativity.  AI systems are designed to learn from data, adapt to new information, and perform tasks that typically require human intelligence.
+
+### Types of Artificial Intelligence
+The field of AI is constantly evolving, leading to a diverse range of AI types:
+* **Narrow AI:** This type of AI focuses on performing specific tasks, such as playing chess or recognizing faces. It excels in its designated domain but lacks general intelligence.
+
+* **General AI:** This type of AI aims to replicate human intelligence, enabling it to perform any intellectual task that a human can. While still in its early stages, it holds immense potential for the future.
+
+* **Super AI:** This hypothetical type of AI surpasses human intelligence in every aspect, potentially leading to significant ethical and societal implications.
+
+### Applications of Artificial Intelligence
+AI is already transforming various industries, with applications spanning across:
+
+* **Healthcare:** AI aids in diagnosing diseases, personalizing treatment plans, and developing new drugs.
+
+* **Finance:** AI powers fraud detection, risk management, and personalized investment advice.
+
+* **Transportation:** AI enables self-driving cars, optimizes traffic flow, and improves logistics.
+
+* **Education:** AI provides personalized learning experiences, automates grading, and offers tailored feedback.
+
+* **Manufacturing:** AI optimizes production processes, reduces waste, and enhances quality control.
+
+* **Customer Service:** AI-powered chatbots provide instant support, answer queries, and personalize interactions.
+
+### Benefits of AI
+The potential benefits of AI are vast and transformative:
+
+* **Increased Efficiency:** AI automates repetitive tasks, freeing up human resources for more creative and strategic work.
+
+* **Enhanced Productivity:** AI analyzes large datasets, identifies patterns, and provides insights that lead to better decision-making and improved outcomes.
+
+* **Improved Accuracy:** AI systems can perform tasks with greater precision and accuracy than humans, reducing errors and improving quality.
+
+* **Personalized Experiences:** AI tailors services and products to individual needs and preferences, creating more engaging and relevant experiences.
+
+* **New Innovations:** AI fuels innovation by enabling the development of new technologies, products, and solutions.
+
+### Challenges and Concerns of AI
+Alongside its benefits, AI also presents several challenges and concerns:
+
+* **Job Displacement:** AI automation could lead to job losses in sectors where tasks are easily automated.
+
+* **Ethical Considerations:** The development and use of AI raise ethical questions regarding bias, privacy, and accountability.
+
+* **Security Risks:** AI systems are vulnerable to hacking and misuse, potentially leading to significant consequences.
+
+* **Lack of Transparency:** The decision-making processes of some AI systems can be opaque, making it difficult to understand their reasoning.
+
+* **Social Inequality:** The benefits of AI may not be distributed equally, potentially exacerbating existing social and economic disparities.
+
+### The Future of AI
+The future of AI is bright and full of potential.  As AI technology continues to advance, we can expect to see:
+* **Increased Intelligence:** AI systems will become more sophisticated, exhibiting greater intelligence and capabilities.
+
+* **Widespread Adoption:** AI will become more accessible and integrated into various industries and aspects of our lives.
+
+* **New Applications:** AI will enable innovative solutions to complex problems in healthcare, climate change, and other areas.
+
+* **Human-AI Collaboration:** AI will work alongside humans, complementing our skills and enhancing our abilities.
+
+### Conclusion: Embracing the AI Revolution
+The AI revolution is already underway, and its impact will be profound. By understanding the potential of AI, addressing its challenges, and embracing its transformative power, we can shape a future where AI empowers humanity and creates a more prosperous and equitable world.  The future is now, and AI is at the forefront of this exciting new era.
+```
+### Reminder
+Image links contain keywords
