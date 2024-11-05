@@ -18,7 +18,7 @@ const Hero: React.FC = () => {
               Master Programming, Maximize Productivity, and Discover Insightful Teachings
             </p>
             <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-              Whether you're a seasoned coder or just starting your journey, 
+              Whether you are a seasoned coder or just starting your journey, 
               SebDoesMedia is here to inspire and guide you every step of the way.
             </p>
             <div className="flex gap-4">
