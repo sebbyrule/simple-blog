@@ -42,10 +42,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { frontMatter, content } = await getArticleContent(params.slug)
 
   return (
-    <article className="py-12">
-      <h1 className="text-4xl font-bold mb-4">{frontMatter.title}</h1>
-      <p className="text-gray-500 mb-8">{frontMatter.date}</p>
-      <div className="prose lg:prose-xl max-w-none">
+    <article className="py-12 container mx-auto px-4">
+      <header className="mb-8">
+        <h1 className="text-4xl font-bold mb-4">{frontMatter.title}</h1>
+        <p className="text-gray-500 dark:text-gray-400">{frontMatter.date}</p>
+      </header>
+      <div className="prose dark:prose-invert prose-lg md:prose-xl max-w-none">
         <MDXRemote source={content} components={MDXComponents} />
       </div>
     </article>

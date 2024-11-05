@@ -14,6 +14,7 @@ interface Article {
   title: string
   date: string
   excerpt: string
+  image: string
 }
 
 interface HowTo {
@@ -39,6 +40,7 @@ async function getRecentArticles(count: number): Promise<Article[]> {
       title: data.title,
       date: data.date,
       excerpt: data.excerpt,
+      image: data.image || '/placeholder-project.jpg',
     }
   })
 
@@ -80,7 +82,8 @@ export default async function Home() {
         <h2 className="text-2xl font-bold mb-4">Recent Articles</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {recentArticles.map((article) => (
-            <article key={article.slug} className="border rounded-lg p-4">
+            <article key={article.slug} className="border rounded-lg overflow-hidden ">
+              <Image src={article.image} alt={article.title} width={500} height={300} />
               <h3 className="text-xl font-semibold mb-2">
                 <Link href={`/articles/${article.slug}`}>
                   {article.title}
